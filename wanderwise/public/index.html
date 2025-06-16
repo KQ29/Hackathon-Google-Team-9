@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WanderWise MVP</title>
+  <link rel="icon" href="/static/image_gen/favicon.png" />
+  <link rel="stylesheet" href="/static/image_gen/styles.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e6f2ff, #d4e3fc, #c0d6f8);
+      background-size: 400% 400%;
+      animation: gradientFlow 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    header {
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-bottom: 1px solid #ddd;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-left img.logo {
+      height: 60px;
+      width: auto;
+    }
+    .title-group h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      color: #1b3b5f;
+    }
+    .title-group h2 {
+      font-size: 1rem;
+      margin: 0;
+      color: #1b3b5f;
+      opacity: 0.7;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      gap: 2rem;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .form-section, .results-section {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .form-section {
+      flex: 0 0 30%;
+    }
+    .results-section {
+      flex: 1;
+    }
+    footer {
+      background: #f1f1f1;
+      text-align: center;
+      padding: 1rem;
+      color: #555;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="/">
+        <img src="/static/image_gen/Logo.png" alt="Ministry Logo" class="logo" />
+      </a>
+      <div class="title-group">
+        <h1>WanderWise Party Planner</h1>
+        <h2>WanderWise Party Planner</h2>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="form-section">
+      <h3>Plan a Party</h3>
+      <form id="chatForm">
+        <textarea id="message" rows="5" style="width: 100%;" placeholder="Describe your party idea..."></textarea>
+        <button type="submit" style="margin-top: 1rem; width: 100%;">Send</button>
+      </form>
+    </section>
+    <section class="results-section">
+      <div id="chatResponse">Ask me to plan your party!</div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Team 9 Google
+  </footer>
+
+  <script>
+    document.getElementById('chatForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const message = document.getElementById('message').value.trim();
+      if (!message) return;
+
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+      document.getElementById('chatResponse').innerText = data.reply;
+    });
+  </script>
+</body>
+</html>

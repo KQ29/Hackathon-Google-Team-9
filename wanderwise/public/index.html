@@ -3,126 +3,173 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WanderWise MVP</title>
-  <link rel="icon" href="/static/image_gen/favicon.png" />
-  <link rel="stylesheet" href="/static/image_gen/styles.css">
+  <title>WanderWise · Travel Planner</title>
+
+  <!-- Tailwind (via CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google colour palette helpers -->
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #e6f2ff, #d4e3fc, #c0d6f8);
-      background-size: 400% 400%;
-      animation: gradientFlow 15s ease infinite;
-      display: flex;
-      flex-direction: column;
-    }
-    @keyframes gradientFlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    header {
-      background-color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 2rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      border-bottom: 1px solid #ddd;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .header-left img.logo {
-      height: 60px;
-      width: auto;
-    }
-    .title-group h1 {
-      font-size: 1.5rem;
-      margin: 0;
-      color: #1b3b5f;
-    }
-    .title-group h2 {
-      font-size: 1rem;
-      margin: 0;
-      color: #1b3b5f;
-      opacity: 0.7;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      gap: 2rem;
-      padding: 2rem;
-      overflow-y: auto;
-    }
-    .form-section, .results-section {
-      background: #ffffff;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    .form-section {
-      flex: 0 0 30%;
-    }
-    .results-section {
-      flex: 1;
-    }
-    footer {
-      background: #f1f1f1;
-      text-align: center;
-      padding: 1rem;
-      color: #555;
-      font-size: 0.8rem;
+    :root {
+      --google-blue:#4285F4;
+      --google-red:#EA4335;
+      --google-yellow:#FBBC05;
+      --google-green:#34A853;
     }
   </style>
 </head>
-<body>
-  <header>
-    <div class="header-left">
-      <a href="/">
-        <img src="/static/image_gen/Logo.png" alt="Ministry Logo" class="logo" />
-      </a>
-      <div class="title-group">
-        <h1>WanderWise Party Planner</h1>
-        <h2>WanderWise Party Planner</h2>
-      </div>
-    </div>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-white shadow flex items-center gap-4 px-6 py-4">
+    <img src="/static/image_gen/Logo.png" alt="Logo" class="h-10 w-auto">
+    <h1 class="text-2xl font-semibold text-slate-800">WanderWise</h1>
   </header>
 
-  <main>
-    <section class="form-section">
-      <h3>Plan a Party</h3>
-      <form id="chatForm">
-        <textarea id="message" rows="5" style="width: 100%;" placeholder="Describe your party idea..."></textarea>
-        <button type="submit" style="margin-top: 1rem; width: 100%;">Send</button>
+  <!-- MAIN -->
+  <main class="flex-1 container mx-auto flex flex-col md:flex-row gap-6 p-6">
+
+    <!-- FORM -->
+    <section class="md:w-1/3 bg-white rounded-xl shadow-lg p-6">
+      <h2 class="text-xl font-medium mb-4 text-slate-700">Plan a Trip</h2>
+      <form id="planForm" class="space-y-4">
+        <label class="block">
+          <span class="text-slate-600">Budget (GBP £)</span>
+          <input id="budget" type="number" min="1" required
+                 class="mt-1 w-full rounded-md border-slate-300 focus:ring-2 focus:ring-[var(--google-blue)] px-3 py-2">
+        </label>
+
+        <label class="block">
+          <span class="text-slate-600">Travellers</span>
+          <input id="travelers" type="number" min="1" required
+                 class="mt-1 w-full rounded-md border-slate-300 focus:ring-2 focus:ring-[var(--google-blue)] px-3 py-2">
+        </label>
+
+        <label class="block">
+          <span class="text-slate-600">Keywords (optional)</span>
+          <input id="keywords" type="text" placeholder="hiking, accessibility, museums…"
+                 class="mt-1 w-full rounded-md border-slate-300 focus:ring-2 focus:ring-[var(--google-blue)] px-3 py-2">
+        </label>
+
+        <button type="submit"
+                class="w-full bg-[var(--google-blue)] hover:bg-blue-600 text-white font-medium py-2 rounded-md">
+          Get Suggestions
+        </button>
       </form>
     </section>
-    <section class="results-section">
-      <div id="chatResponse">Ask me to plan your party!</div>
-    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="flex-1 space-y-4 overflow-y-auto"></section>
   </main>
 
-  <footer>
-    © 2025 Team 9 Google
+  <!-- FOOTER -->
+  <footer class="text-center text-sm text-slate-500 py-4 bg-slate-100">
+    © 2025 WanderWise
   </footer>
 
+  <!-- APP SCRIPT -->
   <script>
-    document.getElementById('chatForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const message = document.getElementById('message').value.trim();
-      if (!message) return;
+    // helper to create DOM from HTML string
+    const html = (strings, ...values) =>
+      strings.reduce((p, c, i) => p + c + (values[i] ?? ''), '');
 
-      const res = await fetch('/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+    // PLAN FORM HANDLER
+    document.getElementById('planForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const budget     = +document.getElementById('budget').value.trim();
+      const travelers  = +document.getElementById('travelers').value.trim();
+      const keywords   =  document.getElementById('keywords').value.trim();
+
+      if (!budget || !travelers) return;
+
+      const resBox = document.getElementById('results');
+      resBox.innerHTML =
+        '<p class="text-slate-600 animate-pulse">Thinking of great places…</p>';
+
+      try {
+        const r = await fetch('/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ budget, travelers, keywords })
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Unknown error');
+
+        renderSuggestions(data.suggestions, { budget, travelers, keywords });
+      } catch (err) {
+        resBox.innerHTML =
+          `<p class="text-red-600">Sorry — ${err.message}</p>`;
+      }
+    });
+
+    // RENDER DESTINATION CARDS
+    function renderSuggestions(list, searchMeta) {
+      const resBox = document.getElementById('results');
+      if (!Array.isArray(list) || !list.length) {
+        resBox.innerHTML =
+          '<p class="text-slate-600">No destinations matched that budget—try raising it a little.</p>';
+        return;
+      }
+
+      resBox.innerHTML = '';
+      list.forEach((d, idx) => {
+        const id = `dest-${idx}`;
+        resBox.insertAdjacentHTML('beforeend', html`
+          <div id="${id}" class="bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-[var(--google-blue)]">${d.name}</h3>
+            <p class="text-slate-600 mb-2">${d.description}</p>
+            <a href="https://www.google.com/maps/search/?api=1&query=${d.lat},${d.lng}"
+               target="_blank"
+               class="inline-block text-[var(--google-red)] underline mb-3">
+               Open in Google Maps
+            </a><br>
+            <button class="explore-btn bg-[var(--google-green)] hover:bg-green-600 text-white px-4 py-2 rounded-md"
+                    data-city="${encodeURIComponent(d.name)}"
+                    data-search='${JSON.stringify(searchMeta)}'
+                    data-dest='${JSON.stringify(d)}'>
+              Save & explore cafés / sights
+            </button>
+            <div class="mt-4 space-y-1 text-sm text-slate-700 hidden"></div>
+          </div>
+        `);
       });
-      const data = await res.json();
-      document.getElementById('chatResponse').innerText = data.reply;
+    }
+
+    // EXPLORE HANDLER (uses event delegation)
+    document.getElementById('results').addEventListener('click', async (e) => {
+      if (!e.target.classList.contains('explore-btn')) return;
+      const btn   = e.target;
+      const card  = btn.closest('div');
+      const list  = card.querySelector('div.mt-4');
+      if (!list.classList.contains('hidden')) return; // already expanded
+
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+
+      try {
+        const res = await fetch(`/explore?city=${btn.dataset.city}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Explore failed');
+
+        // save to Firestore
+        await fetch('/select', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            ...JSON.parse(btn.dataset.search),
+            destination: JSON.parse(btn.dataset.dest)
+          })
+        });
+
+        list.innerHTML =
+          data.places.map(p => `<a href="https://www.google.com/maps/place/?q=place_id:${p.place_id}" target="_blank" class="block underline">${p.name}</a>`).join('');
+        list.classList.remove('hidden');
+        btn.remove();
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Try again';
+        alert(err.message);
+      }
     });
   </script>
 </body>

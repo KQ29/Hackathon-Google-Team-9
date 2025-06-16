@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WanderWise MVP</title>
+  <title>WanderWise – Party Planner</title>
   <link rel="icon" href="/static/image_gen/favicon.png" />
   <link rel="stylesheet" href="/static/image_gen/styles.css">
   <style>
@@ -69,7 +69,21 @@
       flex: 0 0 30%;
     }
     .results-section {
+      flex: 0 0 35%;
+    }
+    .map-section {
       flex: 1;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+      min-height: 400px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
     footer {
       background: #f1f1f1;
@@ -84,33 +98,79 @@
   <header>
     <div class="header-left">
       <a href="/">
-        <img src="/static/image_gen/Logo.png" alt="Ministry Logo" class="logo" />
+        <img src="/static/image_gen/Logo.png" alt="WanderWise Logo" class="logo" />
       </a>
       <div class="title-group">
-        <h1>WanderWise Party Planner</h1>
-        <h2>WanderWise Party Planner</h2>
+        <h1>WanderWise</h1>
+        <h2>AI-Powered Party Planner</h2>
       </div>
     </div>
   </header>
 
   <main>
     <section class="form-section">
-      <h3>Plan a Party</h3>
+      <h3>Plan Your Event</h3>
       <form id="chatForm">
-        <textarea id="message" rows="5" style="width: 100%;" placeholder="Describe your party idea..."></textarea>
-        <button type="submit" style="margin-top: 1rem; width: 100%;">Send</button>
+        <textarea 
+          id="message" 
+          rows="5" 
+          placeholder="Describe your party idea..." 
+          style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px;"
+          required
+        ></textarea>
+        <button 
+          type="submit" 
+          style="margin-top: 1rem; width: 100%; padding: 0.75rem; background-color: #1b3b5f; color: white; border: none; border-radius: 6px; cursor: pointer;"
+        >
+          Get Suggestion
+        </button>
       </form>
     </section>
+
     <section class="results-section">
-      <div id="chatResponse">Ask me to plan your party!</div>
+      <h3>Suggested Theme & Venue</h3>
+      <div id="chatResponse" style="margin-top: 1rem; padding: 1rem; background: #f9f9f9; border: 1px solid #ccc; border-radius: 6px;">
+        Ask me to plan your party!
+      </div>
+    </section>
+
+    <section class="map-section">
+      <h3>Location Map</h3>
+      <div id="map"></div>
     </section>
   </main>
 
   <footer>
-    © 2025 Team 9 Google
+    © 2025 WanderWise – Created with 💡 by Team 9
   </footer>
 
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+
   <script>
+    let map;
+    let marker;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 41.2995, lng: 69.2401 }, // default to Tashkent
+        zoom: 3,
+      });
+    }
+
+    function updateMap(lat, lng, name) {
+      const position = { lat, lng };
+      map.setCenter(position);
+      map.setZoom(14);
+
+      if (marker) marker.setMap(null);
+      marker = new google.maps.Marker({
+        position,
+        map,
+        title: name || "Suggested Venue",
+      });
+    }
+
     document.getElementById('chatForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const message = document.getElementById('message').value.trim();
@@ -123,6 +183,10 @@
       });
       const data = await res.json();
       document.getElementById('chatResponse').innerText = data.reply;
+
+      if (data.lat && data.lng) {
+        updateMap(data.lat, data.lng, data.venue_name);
+      }
     });
   </script>
 </body>

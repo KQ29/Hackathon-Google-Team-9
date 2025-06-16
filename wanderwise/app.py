@@ -16,7 +16,7 @@ print(f"PLACES_KEY set: {bool(PLACES_KEY)}")
 
 def call_gemini(prompt: str) -> str:
     """
-    Uses Gemini 2.0 Flash to get plain text response.
+    Uses Gemini 2.0 Flash to get a guided party planning suggestion.
     """
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/"
@@ -43,39 +43,39 @@ def chat():
     user_msg = request.json.get('message', '')
     print("Received chat request:", user_msg)
     try:
+        # Prompt Gemini with planning guidance
         full_prompt = (
-            f"User wants: '{user_msg}'. "
-            "Suggest one party theme and a one-phrase venue search term in the format:\n"
-            "Theme: <theme>\nVenueQuery: <search term>"
+            f"The user provided this input: '{user_msg}'. "
+            "You are a professional event planner. Based on the user's message, suggest a themed party idea. "
+            "Give a short, enthusiastic paragraph describing the plan, including theme, suggested activities, and ideal venue type. "
+            "At the end, include one search term to find a suitable venue in the format:\nVenueQuery: <search term>"
         )
         gemini_resp = call_gemini(full_prompt)
 
-        # Extract theme and query
-        lines = [line.strip() for line in gemini_resp.splitlines() if line.strip()]
-        theme = next((l.split(":", 1)[1].strip() for l in lines if l.lower().startswith("theme:")), None)
-        query = next((l.split(":", 1)[1].strip() for l in lines if l.lower().startswith("venuequery:")), None)
-        print(f"Theme: {theme}, Query: {query}")
+        # Extract response and venue query
+        lines = gemini_resp.splitlines()
+        venue_query = next((l.split(":", 1)[1].strip() for l in lines if l.lower().startswith("venuequery:")), None)
+        planning_text = gemini_resp.replace(f"VenueQuery: {venue_query}", '').strip()
 
-        if not theme or not query:
-            raise ValueError("Invalid Gemini response")
+        print("Gemini suggested:", planning_text)
+        print("Query:", venue_query)
 
         # Google Places API
-        places_url = (
-            f"https://maps.googleapis.com/maps/api/place/textsearch/json"
-            f"?query={requests.utils.quote(query)}&key={PLACES_KEY}"
-        )
-        places_res = requests.get(places_url)
-        places_data = places_res.json()
-        results = places_data.get('results', [])
+        venue = ""
+        if venue_query:
+            places_url = (
+                f"https://maps.googleapis.com/maps/api/place/textsearch/json"
+                f"?query={requests.utils.quote(venue_query)}&key={PLACES_KEY}"
+            )
+            places_res = requests.get(places_url)
+            places_data = places_res.json()
+            results = places_data.get('results', [])
 
-        # Prepare reply
-        if not results:
-            reply = f"I suggest a *{theme}* party, but couldn’t find a venue for '{query}'."
-        else:
-            top_place = results[0]
-            venue = f"{top_place.get('name')}, {top_place.get('formatted_address')}"
-            reply = f"How about a *{theme}* party? I found *{venue}* as a great spot."
+            if results:
+                top = results[0]
+                venue = f"\n\nTop Venue Suggestion: *{top.get('name')}*, {top.get('formatted_address')}"
 
+        reply = planning_text + venue if planning_text else "Sorry, no ideas right now."
         return jsonify({'reply': reply})
     except Exception as e:
         print("Error:", e)
